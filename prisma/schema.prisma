@@ -1,0 +1,18 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Contato {
+  id              Int      @id @default(autoincrement())
+  nome            String   @db.VarChar(100)
+  sobrenome       String?  @db.VarChar(100)
+  data_nascimento DateTime? @db.Date
+  telefone        String   @unique @db.VarChar(20)
+  familia         Boolean  @default(false)
+}
