@@ -1,12 +1,12 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-require('dotenv').config(); // Load environment variables from .env file
+require('dotenv').config(); 
 
 const prisma = new PrismaClient();
 const app = express();
 
 const cors = require('cors');
-app.use(cors()); // Permite todas as origens (pode ser configurado para permitir só seu frontend)
+app.use(cors()); // Liberação do cors 
 
 
 // Middleware to parse JSON bodies
@@ -14,12 +14,10 @@ app.use(express.json());
 
 // --- API Routes for Contatos ---
 
-// CREATE: Add a new contact
 app.post('/contatos', async (req, res) => {
   try {
     const { nome, sobrenome, data_nascimento, telefone, familia } = req.body;
 
-    // Basic validation (ensure required fields are present)
     if (!nome || !telefone) {
       return res.status(400).json({ error: 'Nome e telefone são obrigatórios.' });
     }
@@ -28,16 +26,14 @@ app.post('/contatos', async (req, res) => {
       data: {
         nome,
         sobrenome,
-        // Convert string date to Date object if provided
         data_nascimento: data_nascimento ? new Date(data_nascimento) : null,
         telefone,
-        familia: familia !== undefined ? familia : false, // Default to false if not provided
+        familia: familia !== undefined ? familia : false, 
       },
     });
     res.status(201).json(novoContato);
   } catch (error) {
     console.error('Erro ao criar contato:', error);
-    // Handle potential unique constraint violation (telefone)
     if (error.code === 'P2002' && error.meta?.target?.includes('telefone')) {
         return res.status(409).json({ error: 'Já existe um contato com este telefone.' });
     }
@@ -45,7 +41,7 @@ app.post('/contatos', async (req, res) => {
   }
 });
 
-// READ: Get all contacts
+// READ: Buscando todos Contatos
 app.get('/contatos', async (req, res) => {
   try {
     const contatos = await prisma.contato.findMany();
@@ -56,12 +52,12 @@ app.get('/contatos', async (req, res) => {
   }
 });
 
-// READ: Get a specific contact by ID
+// READ: Buscando contato específico pelo id
 app.get('/contatos/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const contato = await prisma.contato.findUnique({
-      where: { id: parseInt(id) }, // Ensure ID is an integer
+      where: { id: parseInt(id) }, 
     });
 
     if (!contato) {
@@ -80,15 +76,12 @@ app.put('/contatos/:id', async (req, res) => {
     const { id } = req.params;
     const { nome, sobrenome, data_nascimento, telefone, familia } = req.body;
 
-    // Basic validation (at least one field should be updated, though Prisma handles this)
-    // You might add more specific validation here if needed
-
     const contatoAtualizado = await prisma.contato.update({
       where: { id: parseInt(id) },
       data: {
         nome,
         sobrenome,
-        data_nascimento: data_nascimento ? new Date(data_nascimento) : undefined, // Only update if provided
+        data_nascimento: data_nascimento ? new Date(data_nascimento) : undefined, 
         telefone,
         familia,
       },
@@ -96,11 +89,11 @@ app.put('/contatos/:id', async (req, res) => {
     res.json(contatoAtualizado);
   } catch (error) {
     console.error('Erro ao atualizar contato:', error);
-     // Handle case where record to update is not found
+     // Contato não encontrado
     if (error.code === 'P2025') {
         return res.status(404).json({ error: 'Contato não encontrado para atualização.' });
     }
-    // Handle potential unique constraint violation (telefone)
+    // Contato existente com o mesmo número
     if (error.code === 'P2002' && error.meta?.target?.includes('telefone')) {
         return res.status(409).json({ error: 'Já existe outro contato com este telefone.' });
     }
@@ -108,18 +101,16 @@ app.put('/contatos/:id', async (req, res) => {
   }
 });
 
-// DELETE: Remove a contact by ID
+// DELETE: Contato por id
 app.delete('/contatos/:id', async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.contato.delete({
       where: { id: parseInt(id) },
     });
-    // Send No Content status upon successful deletion
     res.status(204).send();
   } catch (error) {
     console.error('Erro ao deletar contato:', error);
-    // Handle case where record to delete is not found
     if (error.code === 'P2025') {
         return res.status(404).json({ error: 'Contato não encontrado para exclusão.' });
     }
@@ -132,7 +123,7 @@ app.delete('/contatos/:id', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor backend rodando em http://0.0.0.0:${PORT}`);
+  console.log(`Servidor backend rodando em http://127.0.0.1:${PORT}`);
   console.log('API Endpoints:');
   console.log(`  POST   /contatos      - Cria um novo contato`);
   console.log(`  GET    /contatos      - Lista todos os contatos`);
@@ -141,7 +132,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`  DELETE /contatos/:id  - Deleta um contato`);
 });
 
-// Graceful shutdown on Prisma disconnect (optional but good practice)
 process.on('SIGINT', async () => {
   await prisma.$disconnect();
   process.exit(0);
