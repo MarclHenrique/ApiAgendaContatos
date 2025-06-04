@@ -5,6 +5,10 @@ require('dotenv').config(); // Load environment variables from .env file
 const prisma = new PrismaClient();
 const app = express();
 
+const cors = require('cors');
+app.use(cors()); // Permite todas as origens (pode ser configurado para permitir só seu frontend)
+
+
 // Middleware to parse JSON bodies
 app.use(express.json());
 
