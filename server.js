@@ -136,7 +136,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`  DELETE /contatos/:id  - Deleta um contato`);
 });
 
-// Desconectar o Prisma de maneira limpa ao encerrar o processo (prática recomendada)
 process.on('SIGINT', async () => {
   await prisma.$disconnect();
   process.exit(0);
